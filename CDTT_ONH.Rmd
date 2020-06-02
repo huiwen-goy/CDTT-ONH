@@ -1,0 +1,198 @@
+---
+title: "Comparison of YNH and ONH on CDTT English Male"
+output: html_document
+---
+
+```{r, echo=FALSE}
+# Read adaptive data
+data <- read.csv("CDTT_EnglishMale_OHN_YNH_2020.04.22.csv", header = TRUE)
+data$List <- as.factor(data$List)
+data$Group <- factor(data$Group, levels=c("Younger", "Older")) 
+
+#hist(data[data$Group == "Younger", ]$SRT, xlim=c(-15, -9), ylim=c(0, 10), main = "Younger", xlab = "SRT", breaks=15, col="grey")
+#summary(data[data$Group == "Younger", ]$SRT)
+
+#hist(data[data$Group == "Older", ]$SRT, xlim=c(-15, -9), ylim=c(0, 10), main = "Older", xlab = "SRT", breaks=15, col="grey")
+#summary(data[data$Group == "Older", ]$SRT)
+```
+
+## ANOVA results
+A repeated-measures two-way analysis of variance was conducted on the adaptive data, with SRT as the outcome measure, Age Group as a between-subjects factor and List as a within-subject factor. There was a significant effect of Age Group, F(1,30) = 11.66, p = 0.00185, with older listeners having a mean SRT that was 0.54 dB higher than the mean SRT of younger listeners. There was no significant effect of List, F(3,90) = 0.29, p = 0.84, and no interaction of Age Group with List, F(3,90) = 0.50, p = 0.68.
+
+```{r, echo=TRUE}
+# ANOVA (between-group: Age; within-group: List)
+summary(with(data, aov(SRT ~ Group*List + Error(factor(SubjectID)/List))))
+
+```
+
+Age Group Difference
+``` {r, echo=TRUE}
+mean(data[data$Group == "Older", ]$SRT) - mean(data[data$Group == "Younger", ]$SRT)
+```
+  
+## Figure 1. Audiogram
+Mean audiometric threshold of 16 older participants, with standard error of the mean.
+```{r, echo=FALSE}
+
+library(ggplot2)
+
+audio <- read.csv("CDTT_EnglishMale_ONH_Audiograms.csv", header = TRUE)
+
+freq <- c(250, 500, 1000, 2000, 3000, 4000, 8000)
+
+left.m <- as.vector(colMeans(audio[, c(4:10)]))
+left.se <- as.vector(sapply(X = audio[, c(4:10)], FUN = sd)/(15^0.5))
+right.m <- as.vector(colMeans(audio[, c(11:17)]))
+right.se <- as.vector(sapply(X = audio[, c(11:17)], FUN = sd)/(15^0.5))
+
+audio2 <- as.data.frame(rep(freq, 2))
+colnames(audio2) <- c('freq')
+audio2$ear <- c(rep('Left', 7), rep('Right', 7))
+audio2$threshold <- rep(NA, 14)
+audio2$threshold[1:7] <- left.m
+audio2$threshold[8:14] <- right.m
+audio2$se <- rep(NA, 14)
+audio2$se[1:7] <- left.se
+audio2$se[8:14] <- right.se
+
+ggplot(data = audio2, aes(x = freq, y = threshold, group = ear, shape = ear)) + 
+  geom_point(size = 2) +
+    scale_shape_manual(name = "Ear", values = c(17, 1)) +
+  geom_errorbar(data = audio2, 
+    aes(x = freq, ymin = (threshold - se), ymax = (threshold + se)), 
+    width = 0.05, position = position_dodge(0.01)) +
+  geom_line(aes(linetype = ear), color = "black") + 
+    scale_linetype_manual(values = c("longdash", "solid")) + 
+    guides(linetype = FALSE) + 
+  labs(x = "Frequency (Hz)", y = "Threshold (dB HL)") +
+  scale_y_reverse(limits = c(60, 0), breaks = seq(0, 60, by = 10)) + 
+  scale_x_log10(breaks = unique(audio2$freq), labels = unique(c('250', '500', '1000', '2000', '', '4000', '8000'))) +
+  theme_bw() + 
+  theme(axis.title = element_text(size = 25), 
+    axis.text = element_text(colour = "black", size = 20), 
+    text = element_text(size = 20)) + 
+  theme(panel.background = element_rect(color = "black", size = 1)) + 
+  theme(legend.position = c(0.12, 0.2)) + 
+    theme(legend.background = element_rect(fill = "white", color = "black"))
+
+```
+   
+## Figure 2. YNH versus ONH boxplots
+```{r, echo=FALSE, fig.show='hide'}
+
+# option 1: by list (export 8 x 12 inches)
+ggplot(data, aes(x = List, y = SRT)) + 
+  facet_grid( ~ Group) + 
+  geom_boxplot(outlier.shape=NA) + 
+  geom_jitter(height = 0, width = 0.1) + 
+  coord_cartesian(xlim=c(1, 4), ylim=c(-14, -9)) + 
+  xlab('CDTT List') + 
+  ylab('Speech Reception Threshold (dB)') + 
+  theme_bw() + 
+  theme(axis.title = element_text(size = 24), axis.text = element_text(size = 20, colour = "black"), 
+    text = element_text(size = 22)) + 
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) + 
+  theme(axis.title.x = element_text(margin = margin(t = 5, r = 0, b = 0, l = 0))) + 
+  theme(strip.text.x = element_text(size = 20)) + 
+  theme(strip.background = element_rect(color = "black", fill="white", size=1.1, linetype="solid")) + 
+  theme(panel.background = element_rect(color = "black", size = 1.1))
+```
+Option 1
+![](Fig2_boxplot_by_list.jpg)
+   
+```{r, echo=FALSE, fig.show='hide'}
+#option 2: collapse across lists (export 6 x 8 inches)
+ggplot(data, aes(x = Group, y = SRT)) + 
+  geom_boxplot(outlier.shape=NA) + 
+  geom_jitter(height = 0, width = 0.1) + 
+  coord_cartesian(xlim=c(1, 2), ylim=c(-14, -9)) + 
+  xlab('Age Group') + 
+  ylab('Speech Reception Threshold (dB)') + 
+  theme_bw() + 
+  theme(axis.title = element_text(size = 22), axis.text = element_text(size = 20, colour = "black")) + 
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) + 
+  theme(axis.title.x = element_text(margin = margin(t = 5, r = 0, b = 0, l = 0))) + 
+  theme(panel.background = element_rect(color = "black", size = 1.1))
+```
+Option 1
+![](Fig2_boxplot_collapse_list.jpg)
+   
+   
+## Figure 3. Psychometric functions
+```{r, echo=FALSE, fig.show='hide'}
+
+# Read fixed SNR data
+fixed <- read.csv("/CDTT_ONH_YNH_fixedSNR_2020.05.30.csv", header = T)
+fixed$List <- as.factor(fixed$List)
+fixed$Group <- factor(fixed$Group, levels=c("Younger", "Older")) 
+
+# option 1: List by panels, Y and O lines together (export 8 x 16 inches)
+ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = Group)) + 
+  geom_line(aes(linetype = Group), color = "black") +
+  scale_linetype_manual(values = c("solid", "solid")) + 
+  geom_point(size = 3, aes(shape = Group, fill = Group, stroke = 1.1)) + 
+  scale_shape_manual(values = c(23, 24)) + 
+  scale_color_manual(values = c("black", "black")) +
+  scale_fill_manual(values = c("black", "white")) + 
+  guides(fill = guide_legend(override.aes = list(stroke = 1.1))) + 
+  facet_grid( ~ List) + 
+  scale_x_continuous(name = "Signal-to-Noise Ratio (dB)", limits = c(-16, -8), breaks = seq(-15,-9, 2)) + 
+  scale_y_continuous(name = "Triplet Percent Correct", limits = c(0,100), expand = c(0,0), breaks = seq(0,100,10)) + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(size = 24, colour = "black")) + 
+  theme(axis.text.x = element_text(size = 20, colour = "black")) + 
+  theme(axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0))) + 
+  theme(axis.title.y = element_text(size = 26, colour = "black")) +
+  theme(axis.text.y = element_text(size = 20, colour = "black")) + 
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
+  theme(axis.text.x.bottom = element_text(vjust = -1)) + 
+  theme(plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm")) + 
+  theme(legend.position = c(0.93, 0.12)) + 
+  theme(legend.background = element_rect(fill = "white", color = "black")) + 
+  theme(legend.title = element_blank()) +
+  theme(legend.text = element_text(size = 18, colour = "black")) +
+  theme(legend.key.size = unit(1.2, "cm")) + 
+  theme(legend.key.width = unit(1, "cm")) + 
+  theme(strip.text.x = element_text(size = 20)) + 
+  theme(strip.background = element_rect(color = "black", fill="white", size=1.1, linetype="solid")) + 
+  theme(panel.background = element_rect(color = "black", size = 1.1))
+```
+Option 1
+![](Fig3_psychometric_by_list.jpg)
+     
+
+```{r, echo=FALSE, fig.show='hide'}   
+# option 2
+ ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = List)) + 
+  geom_line(aes(linetype = List), color = "black") +
+  scale_linetype_manual(values = c("solid", "solid", "solid", "solid")) + 
+  geom_point(size = 3, aes(shape = List, fill = List, stroke = 1.1)) + 
+  scale_shape_manual(values = c(22, 17, 21, 4)) + 
+  scale_color_manual(values = c("black", "black", "black", "black")) +
+  scale_fill_manual(values = c("white", "black", "white", "black")) + 
+  guides(fill = guide_legend(override.aes = list(stroke = 1.1))) + 
+  facet_grid( ~ Group) + 
+  scale_x_continuous(name = "Signal-to-Noise Ratio (dB)", limits = c(-16, -8), breaks = seq(-15,-9, 2)) + 
+  scale_y_continuous(name = "Triplet Percent Correct", limits = c(0,100), expand = c(0,0), breaks = seq(0,100,10)) + 
+  theme_bw() + 
+  theme(axis.title.x = element_text(size = 24, colour = "black")) + 
+  theme(axis.text.x = element_text(size = 20, colour = "black")) + 
+  theme(axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0))) + 
+  theme(axis.title.y = element_text(size = 26, colour = "black")) +
+  theme(axis.text.y = element_text(size = 20, colour = "black")) + 
+  theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
+  theme(axis.text.x.bottom = element_text(vjust = -1)) + 
+  theme(plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm")) + 
+  theme(legend.position = c(0.93, 0.2)) + 
+  theme(legend.background = element_rect(fill = "white", color = "black")) + 
+  theme(legend.title = element_text(size = 18, colour = "black")) +
+  theme(legend.text = element_text(size = 16, colour = "black")) +
+  theme(legend.key.size = unit(1.2, "cm")) + 
+  theme(legend.key.width = unit(1.5, "cm")) + 
+  theme(strip.text.x = element_text(size = 20)) + 
+  theme(strip.background = element_rect(color = "black", fill="white", size=1.1, linetype="solid")) + 
+  theme(panel.background = element_rect(color = "black", size = 1.1))
+```
+Option 2   
+ ![](Fig3_psychometric_by_group.jpg)
+  
