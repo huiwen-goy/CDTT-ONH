@@ -29,6 +29,37 @@ Age Group Difference
 ``` {r, echo=TRUE}
 mean(data[data$Group == "Older", ]$SRT) - mean(data[data$Group == "Younger", ]$SRT)
 ```
+
+## Power analysis
+Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. 
+The effect size (for two independent groups) is therefore 2.256811.
+Using G*Power, the power is 0.9999872.
+ 
+If the SRT difference is 0.2 dB, the effect size is 0.8371892, assuming the variances of both groups remains the same.
+To achieve a power of 0.8 with this new effect size, we need at least 24 participants in each group.
+If the number of participants in each group is 16 (what we have now), with an SRT difference of 0.2, the power is 0.63.
+ 
+``` {r, include=FALSE}
+mean(data[data$Group == "Younger", ]$SRT)
+sd(data[data$Group == "Younger", ]$SRT)
+var(data[data$Group == "Younger", ]$SRT)
+
+mean(data[data$Group == "Older", ]$SRT)
+sd(data[data$Group == "Older", ]$SRT)
+var(data[data$Group == "Older", ]$SRT)
+
+# effect size = 2.256811
+(-11.50595 - -12.04509) / (0.4670122/16 + 0.4461181/16)^0.5
+# delta = d * sqrt(n/2) = 6.383225
+2.256811 * (16 / 2)^0.5
+# G*Power, post-hoc: delta = 6.3832254, power = 0.9999872
+
+# If SRT difference is 0.2 dB, then effect size = 0.8371892
+0.2 / (0.4670122/16 + 0.4461181/16)^0.5
+# For power = 0.8, effect size = 0.8371892, we need 24 participants in each group
+# Given we have 16 participants in each group, assuming an SRT difference of 0.2 dB (effect size 0.837), power = 0.6299494
+
+```
   
 ## Figure 1. Audiogram
 Mean audiometric threshold of 16 older participants, with standard error of the mean.
