@@ -31,13 +31,13 @@ mean(data[data$Group == "Older", ]$SRT) - mean(data[data$Group == "Younger", ]$S
 ```
 
 ## Power analysis
-Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. 
+Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. The variance of YNH is 0.4461181; the variance of ONH is 0.4670122.
 The effect size (for two independent groups) is therefore 2.256811.
 Using G*Power, the power is 0.9999872.
  
 If the SRT difference is 0.2 dB, the effect size is 0.8371892, assuming the variances of both groups remains the same.
 To achieve a power of 0.8 with this new effect size, we need at least 24 participants in each group.
-If the number of participants in each group is 16 (what we have now), with an SRT difference of 0.2, the power is 0.63.
+If the number of participants in each group is 16 (what we have now), with an SRT difference of 0.2, the power is 0.63. In other words, with 16 participants per group, there isn't really enough power to detect a difference between groups of 0.2 dB.
  
 ``` {r, include=FALSE}
 mean(data[data$Group == "Younger", ]$SRT)
@@ -52,7 +52,7 @@ var(data[data$Group == "Older", ]$SRT)
 (-11.50595 - -12.04509) / (0.4670122/16 + 0.4461181/16)^0.5
 # delta = d * sqrt(n/2) = 6.383225
 2.256811 * (16 / 2)^0.5
-# G*Power, post-hoc: delta = 6.3832254, power = 0.9999872
+# G*Power 3.1, post-hoc: delta = 6.3832254, power = 0.9999872
 
 # If SRT difference is 0.2 dB, then effect size = 0.8371892
 0.2 / (0.4670122/16 + 0.4461181/16)^0.5
@@ -68,6 +68,7 @@ Mean audiometric threshold of 16 older participants, with standard error of the 
 library(ggplot2)
 
 audio <- read.csv("CDTT_EnglishMale_ONH_Audiograms.csv", header = TRUE)
+
 
 freq <- c(250, 500, 1000, 2000, 3000, 4000, 8000)
 
