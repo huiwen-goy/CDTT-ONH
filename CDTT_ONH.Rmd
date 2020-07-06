@@ -6,6 +6,7 @@ output: html_document
 ```{r, echo=FALSE}
 # Read adaptive data
 data <- read.csv("CDTT_EnglishMale_OHN_YNH_2020.04.22.csv", header = TRUE)
+
 data$List <- as.factor(data$List)
 data$Group <- factor(data$Group, levels=c("Younger", "Older")) 
 
@@ -31,13 +32,20 @@ mean(data[data$Group == "Older", ]$SRT) - mean(data[data$Group == "Younger", ]$S
 ```
 
 ## Power analysis
-Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. The variance of YNH is 0.4461181; the variance of ONH is 0.4670122.
-The effect size (for two independent groups) is therefore 2.256811.
-Using G*Power, the power is 0.9999872.
+Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. The SD of YNH is 0.6679207; the SD of ONH is 0.6833829.
+The effect size (for two independent groups) is therefore (-11.50595 - -12.04509) / ((0.6833829 + 0.6679207)/2) = 0.7979554.
+Using G*Power, the power is 0.588762.
+
+**Output from UBC power calculator**
+![](power_UBC.jpg)
+
+**GPower calculator: Post-hoc power calculation with n=16 per group**
+![](power_posthoc.jpg)
  
-If the SRT difference is 0.2 dB, the effect size is 0.8371892, assuming the variances of both groups remains the same.
-To achieve a power of 0.8 with this new effect size, we need at least 24 participants in each group.
-If the number of participants in each group is 16 (what we have now), with an SRT difference of 0.2, the power is 0.63. In other words, with 16 participants per group, there isn't really enough power to detect a difference between groups of 0.2 dB.
+If the SRT difference is 0.2 dB, the effect size is 0.2960105, assuming the variances of both groups remains the same. To achieve a power of 0.8 with this new effect size, we need at least 181 participants in each group to say with confidence that we can detect a difference of 0.2 dB. 
+
+**GPower calculator: A priori sample size calculation, assuming a difference of 0.2 dB**
+![](power_apriori.jpg)
  
 ``` {r, include=FALSE}
 mean(data[data$Group == "Younger", ]$SRT)
@@ -48,15 +56,16 @@ mean(data[data$Group == "Older", ]$SRT)
 sd(data[data$Group == "Older", ]$SRT)
 var(data[data$Group == "Older", ]$SRT)
 
-# effect size = 2.256811
-(-11.50595 - -12.04509) / (0.4670122/16 + 0.4461181/16)^0.5
-# delta = d * sqrt(n/2) = 6.383225
-2.256811 * (16 / 2)^0.5
-# G*Power 3.1, post-hoc: delta = 6.3832254, power = 0.9999872
+# effect size = 0.7979554
+(-11.50595 - -12.04509) / ((0.6833829 + 0.6679207)/2)
+# delta = d * sqrt(n/2) = 2.256959
+0.7979554 * (16 / 2)^0.5
+# Howell textbook table: 0.6170877
+# G*Power 3.1, post-hoc: delta = 2.2569587, power = 0.588762
 
-# If SRT difference is 0.2 dB, then effect size = 0.8371892
-0.2 / (0.4670122/16 + 0.4461181/16)^0.5
-# For power = 0.8, effect size = 0.8371892, we need 24 participants in each group
+# If SRT difference is 0.2 dB, then effect size = 0.2960105
+0.2 / ((0.6833829 + 0.6679207)/2)
+# For power = 0.8, effect size = 0.2960105, we need ? participants in each group
 # Given we have 16 participants in each group, assuming an SRT difference of 0.2 dB (effect size 0.837), power = 0.6299494
 
 ```
@@ -65,18 +74,19 @@ var(data[data$Group == "Older", ]$SRT)
 Mean audiometric threshold of 16 older participants, with standard error of the mean.
 ```{r, echo=FALSE}
 
-library(ggplot2)
-
+# Read audiogram data
 audio <- read.csv("CDTT_EnglishMale_ONH_Audiograms.csv", header = TRUE)
 
-
+# Specify x-axis datapoints
 freq <- c(250, 500, 1000, 2000, 3000, 4000, 8000)
 
+# Calculate y-axis means and error bars for plotting
 left.m <- as.vector(colMeans(audio[, c(4:10)]))
 left.se <- as.vector(sapply(X = audio[, c(4:10)], FUN = sd)/(15^0.5))
 right.m <- as.vector(colMeans(audio[, c(11:17)]))
 right.se <- as.vector(sapply(X = audio[, c(11:17)], FUN = sd)/(15^0.5))
 
+# Combine x and y points into dataframe for plotting
 audio2 <- as.data.frame(rep(freq, 2))
 colnames(audio2) <- c('freq')
 audio2$ear <- c(rep('Left', 7), rep('Right', 7))
@@ -86,6 +96,8 @@ audio2$threshold[8:14] <- right.m
 audio2$se <- rep(NA, 14)
 audio2$se[1:7] <- left.se
 audio2$se[8:14] <- right.se
+
+library(ggplot2)
 
 ggplot(data = audio2, aes(x = freq, y = threshold, group = ear, shape = ear)) + 
   geom_point(size = 2) +
@@ -154,7 +166,7 @@ Option 2
 ```{r, echo=FALSE, fig.show='hide'}
 
 # Read fixed SNR data
-fixed <- read.csv("CDTT_ONH_YNH_fixedSNR_2020.05.30.csv", header = T)
+fixed <- read.csv("/Users/huiwen/Documents/Research/Digit Triplets Test/DTT Part 2 Male talker OA/data_2020_05_30_fixedSNR/CDTT_ONH_YNH_fixedSNR_2020.05.30.csv", header = T)
 fixed$List <- as.factor(fixed$List)
 fixed$Group <- factor(fixed$Group, levels=c("Younger", "Older")) 
 
