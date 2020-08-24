@@ -36,9 +36,6 @@ Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. The SD of 
 The effect size (for two independent groups) is therefore (-11.50595 - -12.04509) / ((0.6833829 + 0.6679207)/2) = 0.7979554.
 Using G*Power, the power is 0.588762.
 
-**Output from UBC power calculator**
-![](power_UBC.jpg)
-
 **GPower calculator: Post-hoc power calculation with n=16 per group**
 ![](power_posthoc.jpg)
  
@@ -71,7 +68,9 @@ var(data[data$Group == "Older", ]$SRT)
 ```
   
 ## Figure 1. Audiogram
-Mean audiometric threshold of 16 older participants, with standard error of the mean.
+Mean audiometric thresholds of 16 older participants (black lines), with standard error of the mean. 
+The 90th, 50th and 10th percentiles of hearing thresholds in otologically normal 70-year-olds (ISO7029:2017)
+are also shown in gray (females = solid; males = dashed).
 ```{r, echo=FALSE}
 
 # Read audiogram data
@@ -97,31 +96,48 @@ audio2$se <- rep(NA, 14)
 audio2$se[1:7] <- left.se
 audio2$se[8:14] <- right.se
 
+# ISO 7029 (2017) thresholds 0.25-8kHz for males and females aged 70 years (separated by percentiles)
+iso <- read.csv("ISO2017.csv", header=TRUE)
+
 library(ggplot2)
 
-ggplot(data = audio2, aes(x = freq, y = threshold, group = ear, shape = ear)) + 
-  geom_point(size = 2) +
+# Export as PDF 6 x 9 inches
+ggplot() + 
+  geom_line(data = iso, aes(x = Freq, y = male90th), color = "darkgray", linetype = "dashed") + 
+  geom_line(data = iso, aes(x = Freq, y = male50th), color = "darkgray", linetype = "dashed") + 
+  geom_line(data = iso, aes(x = Freq, y = male10th), color = "darkgray", linetype = "dashed") + 
+  geom_line(data = iso, aes(x = Freq, y = female90th), color = "darkgray", linetype = "solid") + 
+  geom_line(data = iso, aes(x = Freq, y = female50th), color = "darkgray", linetype = "solid") + 
+  geom_line(data = iso, aes(x = Freq, y = female10th), color = "darkgray", linetype = "solid") + 
+  geom_text(aes(label = "90th", x = 6000, y = 18), color = "darkgray", size = 6) + 
+  geom_text(aes(label = "50th", x = 4550, y = 32), color = "darkgray", size = 6) + 
+  geom_text(aes(label = "10th", x = 3275, y = 46), color = "darkgray", size = 6) + 
+  geom_point(data = audio2, 
+      aes(x = freq, y = threshold, group = ear, shape = ear), size = 3) +
     scale_shape_manual(name = "Ear", values = c(17, 1)) +
   geom_errorbar(data = audio2, 
-    aes(x = freq, ymin = (threshold - se), ymax = (threshold + se)), 
-    width = 0.05, position = position_dodge(0.01)) +
-  geom_line(aes(linetype = ear), color = "black") + 
+      aes(x = freq, ymin = (threshold - se), ymax = (threshold + se)), 
+      width = 0.05, position = position_dodge(0.01)) +
+  geom_line(data = audio2, 
+      aes(x = freq, y = threshold, linetype = ear), color = "black", size = 1) + 
     scale_linetype_manual(values = c("longdash", "solid")) + 
     guides(linetype = FALSE) + 
   labs(x = "Frequency (Hz)", y = "Threshold (dB HL)") +
-  scale_y_reverse(limits = c(60, 0), breaks = seq(0, 60, by = 10)) + 
+  scale_y_reverse(limits = c(80, 0), breaks = seq(0, 80, by = 10)) + 
   scale_x_log10(breaks = unique(audio2$freq), labels = unique(c('250', '500', '1000', '2000', '', '4000', '8000'))) +
   theme_bw() + 
   theme(axis.title = element_text(size = 25), 
     axis.text = element_text(colour = "black", size = 20), 
     text = element_text(size = 20)) + 
   theme(panel.background = element_rect(color = "black", size = 1)) + 
-  theme(legend.position = c(0.12, 0.2)) + 
+  theme(legend.position = c(0.1, 0.15)) + 
     theme(legend.background = element_rect(fill = "white", color = "black"))
 
 ```
    
 ## Figure 2. YNH versus ONH boxplots
+  
+Boxplots show the median and interquartile range, with whiskers depicting either the minimum and maximum of the data or 1.5 * Interquartile Range, whichever is smaller. Datapoints for individual participants are overlaid on top of the boxplots.
 ```{r, echo=FALSE, fig.show='hide'}
 
 # option 1: by list (export 8 x 12 inches)
@@ -141,10 +157,10 @@ ggplot(data, aes(x = List, y = SRT)) +
   theme(strip.background = element_rect(color = "black", fill="white", size=1.1, linetype="solid")) + 
   theme(panel.background = element_rect(color = "black", size = 1.1))
 ```
-Option 1
+
 ![](Fig2_boxplot_by_list.jpg)
    
-```{r, echo=FALSE, fig.show='hide'}
+```{r, include=FALSE}
 #option 2: collapse across lists (export 6 x 8 inches)
 ggplot(data, aes(x = Group, y = SRT)) + 
   geom_boxplot(outlier.shape=NA) + 
@@ -158,15 +174,13 @@ ggplot(data, aes(x = Group, y = SRT)) +
   theme(axis.title.x = element_text(margin = margin(t = 5, r = 0, b = 0, l = 0))) + 
   theme(panel.background = element_rect(color = "black", size = 1.1))
 ```
-Option 2
-![](Fig2_boxplot_collapse_list.jpg)
-   
    
 ## Figure 3. Psychometric functions
 ```{r, echo=FALSE, fig.show='hide'}
 
 # Read fixed SNR data
-fixed <- read.csv("/Users/huiwen/Documents/Research/Digit Triplets Test/DTT Part 2 Male talker OA/data_2020_05_30_fixedSNR/CDTT_ONH_YNH_fixedSNR_2020.05.30.csv", header = T)
+fixed <- read.csv("CDTT_ONH_YNH_fixedSNR_2020.05.30.csv", header = T)
+
 fixed$List <- as.factor(fixed$List)
 fixed$Group <- factor(fixed$Group, levels=c("Younger", "Older")) 
 
@@ -201,11 +215,11 @@ ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = Group)) +
   theme(strip.background = element_rect(color = "black", fill="white", size=1.1, linetype="solid")) + 
   theme(panel.background = element_rect(color = "black", size = 1.1))
 ```
-Option 1
+
 ![](Fig3_psychometric_by_list.jpg)
      
 
-```{r, echo=FALSE, fig.show='hide'}   
+```{r, include=FALSE}   
 # option 2
  ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = List)) + 
   geom_line(aes(linetype = List), color = "black") +
@@ -237,6 +251,4 @@ Option 1
   theme(strip.background = element_rect(color = "black", fill="white", size=1.1, linetype="solid")) + 
   theme(panel.background = element_rect(color = "black", size = 1.1))
 ```
-Option 2   
- ![](Fig3_psychometric_by_group.jpg)
   
