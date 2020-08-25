@@ -35,14 +35,8 @@ mean(data[data$Group == "Older", ]$SRT) - mean(data[data$Group == "Younger", ]$S
 Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. The SD of YNH is 0.6679207; the SD of ONH is 0.6833829.
 The effect size (for two independent groups) is therefore (-11.50595 - -12.04509) / ((0.6833829 + 0.6679207)/2) = 0.7979554.
 Using G*Power, the power is 0.588762.
-
-**GPower calculator: Post-hoc power calculation with n=16 per group**
-![](power_posthoc.jpg)
  
 If the SRT difference is 0.2 dB, the effect size is 0.2960105, assuming the variances of both groups remains the same. To achieve a power of 0.8 with this new effect size, we need at least 181 participants in each group to say with confidence that we can detect a difference of 0.2 dB. 
-
-**GPower calculator: A priori sample size calculation, assuming a difference of 0.2 dB**
-![](power_apriori.jpg)
  
 ``` {r, include=FALSE}
 mean(data[data$Group == "Younger", ]$SRT)
@@ -80,21 +74,29 @@ audio <- read.csv("CDTT_EnglishMale_ONH_Audiograms.csv", header = TRUE)
 freq <- c(250, 500, 1000, 2000, 3000, 4000, 8000)
 
 # Calculate y-axis means and error bars for plotting
-left.m <- as.vector(colMeans(audio[, c(4:10)]))
-left.se <- as.vector(sapply(X = audio[, c(4:10)], FUN = sd)/(15^0.5))
-right.m <- as.vector(colMeans(audio[, c(11:17)]))
-right.se <- as.vector(sapply(X = audio[, c(11:17)], FUN = sd)/(15^0.5))
+#left.m <- as.vector(colMeans(audio[, c(4:10)]))
+#left.se <- as.vector(sapply(X = audio[, c(4:10)], FUN = sd)/(15^0.5))
+#right.m <- as.vector(colMeans(audio[, c(11:17)]))
+#right.se <- as.vector(sapply(X = audio[, c(11:17)], FUN = sd)/(15^0.5))
+
+# Calculate averages split by male (n=3) and female (n=13)
+males <- subset(audio, Sex == 'M')
+females <- subset(audio, Sex == 'F')
+means.m <- as.vector(colMeans(males[, c(18:24)]))
+se.m <- as.vector(sapply(X = males[, c(18:24)], FUN = sd)/(2^0.5))
+means.f <- as.vector(colMeans(females[, c(18:24)]))
+se.f <- as.vector(sapply(X = females[, c(18:24)], FUN = sd)/(12^0.5))
 
 # Combine x and y points into dataframe for plotting
 audio2 <- as.data.frame(rep(freq, 2))
 colnames(audio2) <- c('freq')
-audio2$ear <- c(rep('Left', 7), rep('Right', 7))
+audio2$Sex <- c(rep('Females', 7), rep('Males', 7))
 audio2$threshold <- rep(NA, 14)
-audio2$threshold[1:7] <- left.m
-audio2$threshold[8:14] <- right.m
+audio2$threshold[1:7] <- means.f
+audio2$threshold[8:14] <- means.m
 audio2$se <- rep(NA, 14)
-audio2$se[1:7] <- left.se
-audio2$se[8:14] <- right.se
+audio2$se[1:7] <- se.f
+audio2$se[8:14] <- se.m
 
 # ISO 7029 (2017) thresholds 0.25-8kHz for males and females aged 70 years (separated by percentiles)
 iso <- read.csv("ISO2017.csv", header=TRUE)
@@ -113,24 +115,24 @@ ggplot() +
   geom_text(aes(label = "50th", x = 4550, y = 32), color = "darkgray", size = 6) + 
   geom_text(aes(label = "10th", x = 3275, y = 46), color = "darkgray", size = 6) + 
   geom_point(data = audio2, 
-      aes(x = freq, y = threshold, group = ear, shape = ear), size = 3) +
-    scale_shape_manual(name = "Ear", values = c(17, 1)) +
-  geom_errorbar(data = audio2, 
-      aes(x = freq, ymin = (threshold - se), ymax = (threshold + se)), 
-      width = 0.05, position = position_dodge(0.01)) +
+      aes(x = freq, y = threshold, group = Sex, shape = Sex), size = 3) +
+    scale_shape_manual(name = "Sex", values = c(17, 1)) +
+  geom_errorbar(data = audio2,
+      aes(x = freq, ymin = (threshold - se), ymax = (threshold + se), group = Sex), 
+      size = 0.5, width = 0.04, position = position_dodge(0.01)) +
   geom_line(data = audio2, 
-      aes(x = freq, y = threshold, linetype = ear), color = "black", size = 1) + 
-    scale_linetype_manual(values = c("longdash", "solid")) + 
+      aes(x = freq, y = threshold, linetype = Sex), color = "black", size = 1) + 
+    scale_linetype_manual(values = c("solid", "longdash")) + 
     guides(linetype = FALSE) + 
   labs(x = "Frequency (Hz)", y = "Threshold (dB HL)") +
-  scale_y_reverse(limits = c(80, 0), breaks = seq(0, 80, by = 10)) + 
+  scale_y_reverse(limits = c(80, -10), breaks = seq(-10, 80, by = 10)) + 
   scale_x_log10(breaks = unique(audio2$freq), labels = unique(c('250', '500', '1000', '2000', '', '4000', '8000'))) +
   theme_bw() + 
   theme(axis.title = element_text(size = 25), 
     axis.text = element_text(colour = "black", size = 20), 
     text = element_text(size = 20)) + 
   theme(panel.background = element_rect(color = "black", size = 1)) + 
-  theme(legend.position = c(0.1, 0.15)) + 
+  theme(legend.position = c(0.15, 0.15)) + 
     theme(legend.background = element_rect(fill = "white", color = "black"))
 
 ```
