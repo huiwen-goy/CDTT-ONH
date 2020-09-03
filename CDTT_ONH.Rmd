@@ -62,9 +62,7 @@ var(data[data$Group == "Older", ]$SRT)
 ```
   
 ## Figure 1. Audiogram
-Mean audiometric thresholds of 16 older participants (black lines), with standard error of the mean. 
-The 90th, 50th and 10th percentiles of hearing thresholds in otologically normal 70-year-olds (ISO7029:2017)
-are also shown in gray (females = solid; males = dashed).
+Mean audiometric thresholds of 16 older participants (13 females and 3 males; black lines), with standard error of the mean. The 90th, 50th and 10th percentiles of hearing thresholds in otologically normal 70-year-olds are shown in gray (ISO7029:2017; females = solid; males = dashed).
 ```{r, echo=FALSE}
 
 # Read audiogram data
@@ -116,7 +114,7 @@ ggplot() +
   geom_text(aes(label = "10th", x = 3275, y = 46), color = "darkgray", size = 6) + 
   geom_point(data = audio2, 
       aes(x = freq, y = threshold, group = Sex, shape = Sex), size = 3) +
-    scale_shape_manual(name = "Sex", values = c(17, 1)) +
+    scale_shape_manual(name = "Sex", values = c(17, 22)) +
   geom_errorbar(data = audio2,
       aes(x = freq, ymin = (threshold - se), ymax = (threshold + se), group = Sex), 
       size = 0.5, width = 0.04, position = position_dodge(0.01)) +
