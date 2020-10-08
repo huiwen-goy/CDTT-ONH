@@ -1,7 +1,18 @@
-# CDTT-ONH
 
-The key analysis compares younger and older listeners on the CDTT English Male version - these listeners are older adults with good hearing up to 3 kHz, tested on the CDTT English Male version at UTM, and the subset of younger adults who did the English Male version in the CDTT core manuscript. 
-
-The Rmd file contains the code for running an ANOVA and a power analysis, plotting an audiogram, two versions of boxplots depicting YNH versus ONH, and the psychometric functions across SNRs and Lists for YNH versus ONH.
-
-The HTML file contains the text and graph output from the Rmd file.
+#### About this project
+ 
+The goal of this project was to compare the performance of healthy younger and older adults on a test that measured speech understanding in a noisy environment.
+  
+#### About the data
+ 
+There were 16 older adults and 16 younger adults who participated in the hearing test. Four observations were collected from each person.
+ 
+#### About the code
+ 
+The Rmd file contains code for: an analysis of variance comparing the performance of the two age groups on repeated measures, a calculation of the effect size, a power analysis, and plots of the test results.
+  
+#### Results
+ 
+A summary of the analysis and plots can be found here:
+ 
+(https://huiwen-goy.github.io/CDTT-ONH/CDTT_ONH.html)[https://huiwen-goy.github.io/CDTT-ONH/CDTT_ONH.html]
