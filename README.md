@@ -15,4 +15,4 @@ The Rmd file contains code for: an analysis of variance comparing the performanc
  
 A summary of the analysis and plots can be found here:
  
-(https://huiwen-goy.github.io/CDTT-ONH/CDTT_ONH.html)[https://huiwen-goy.github.io/CDTT-ONH/CDTT_ONH.html]
+[https://huiwen-goy.github.io/CDTT-ONH/CDTT_ONH.html](https://huiwen-goy.github.io/CDTT-ONH/CDTT_ONH.html)
