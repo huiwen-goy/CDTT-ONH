@@ -2,43 +2,39 @@
 title: "Comparison of YNH and ONH on CDTT English Male"
 output: html_document
 ---
-
+  
+### ANOVA results
+A repeated-measures two-way analysis of variance was conducted on the adaptive data, with SRT as the outcome measure, Age Group as a between-subjects factor and List as a within-subject factor. There was a significant effect of Age Group, F(1,30) = 11.66, p = 0.00185, with older listeners having a mean SRT that was 0.54 dB higher than the mean SRT of younger listeners. There was no significant effect of List, F(3,90) = 0.29, p = 0.84, and no interaction of Age Group with List, F(3,90) = 0.50, p = 0.68.
+  
 ```{r, echo=FALSE}
+
 # Read adaptive data
 data <- read.csv("CDTT_EnglishMale_OHN_YNH_2020.04.22.csv", header = TRUE)
 
 data$List <- as.factor(data$List)
 data$Group <- factor(data$Group, levels=c("Younger", "Older")) 
 
-#hist(data[data$Group == "Younger", ]$SRT, xlim=c(-15, -9), ylim=c(0, 10), main = "Younger", xlab = "SRT", breaks=15, col="grey")
-#summary(data[data$Group == "Younger", ]$SRT)
-
-#hist(data[data$Group == "Older", ]$SRT, xlim=c(-15, -9), ylim=c(0, 10), main = "Older", xlab = "SRT", breaks=15, col="grey")
-#summary(data[data$Group == "Older", ]$SRT)
 ```
-
-## ANOVA results
-A repeated-measures two-way analysis of variance was conducted on the adaptive data, with SRT as the outcome measure, Age Group as a between-subjects factor and List as a within-subject factor. There was a significant effect of Age Group, F(1,30) = 11.66, p = 0.00185, with older listeners having a mean SRT that was 0.54 dB higher than the mean SRT of younger listeners. There was no significant effect of List, F(3,90) = 0.29, p = 0.84, and no interaction of Age Group with List, F(3,90) = 0.50, p = 0.68.
-
+  
 ```{r, echo=TRUE}
+
 # ANOVA (between-group: Age; within-group: List)
 summary(with(data, aov(SRT ~ Group*List + Error(factor(SubjectID)/List))))
 
-```
-
-Age Group Difference
-``` {r, echo=TRUE}
+# Overall age group difference
 mean(data[data$Group == "Older", ]$SRT) - mean(data[data$Group == "Younger", ]$SRT)
-```
 
-## Power analysis
+```
+  
+### Power analysis
 Currently, the mean SRT difference between YNH and ONH is 0.53914 dB. The SD of YNH is 0.6679207; the SD of ONH is 0.6833829.
 The effect size (for two independent groups) is therefore (-11.50595 - -12.04509) / ((0.6833829 + 0.6679207)/2) = 0.7979554.
 Using G*Power, the power is 0.588762.
  
 If the SRT difference is 0.2 dB, the effect size is 0.2960105, assuming the variances of both groups remains the same. To achieve a power of 0.8 with this new effect size, we need at least 181 participants in each group to say with confidence that we can detect a difference of 0.2 dB. 
  
-``` {r, include=FALSE}
+``` {r, evaluate=FALSE, include=FALSE}
+
 mean(data[data$Group == "Younger", ]$SRT)
 sd(data[data$Group == "Younger", ]$SRT)
 var(data[data$Group == "Younger", ]$SRT)
@@ -61,7 +57,7 @@ var(data[data$Group == "Older", ]$SRT)
 
 ```
   
-## Figure 1. Audiogram
+### Figure 1. Audiogram
 Mean audiometric thresholds of 16 older participants (13 females and 3 males; black lines), with standard error of the mean. The 90th, 50th and 10th percentiles of hearing thresholds in otologically normal 70-year-olds are shown in gray (ISO7029:2017; females = solid; males = dashed).
 ```{r, echo=FALSE}
 
@@ -135,12 +131,11 @@ ggplot() +
 
 ```
    
-## Figure 2. YNH versus ONH boxplots
-  
+### Figure 2. YNH versus ONH boxplots
 Boxplots show the median and interquartile range, with whiskers depicting either the minimum and maximum of the data or 1.5 * Interquartile Range, whichever is smaller. Datapoints for individual participants are overlaid on top of the boxplots.
-```{r, echo=FALSE, fig.show='hide'}
+```{r, evaluate=FALSE, include=FALSE}
 
-# option 1: by list (export 8 x 12 inches)
+# Y and O boxplots, by list (export 8 x 12 inches)
 ggplot(data, aes(x = List, y = SRT)) + 
   facet_grid( ~ Group) + 
   geom_boxplot(outlier.shape=NA) + 
@@ -160,8 +155,9 @@ ggplot(data, aes(x = List, y = SRT)) +
 
 ![](Fig2_boxplot_by_list.jpg)
    
-```{r, include=FALSE}
-#option 2: collapse across lists (export 6 x 8 inches)
+```{r, evaluate=FALSE, include=FALSE}
+
+# Y and O boxplots, collapsing across lists
 ggplot(data, aes(x = Group, y = SRT)) + 
   geom_boxplot(outlier.shape=NA) + 
   geom_jitter(height = 0, width = 0.1) + 
@@ -174,17 +170,22 @@ ggplot(data, aes(x = Group, y = SRT)) +
   theme(axis.title.x = element_text(margin = margin(t = 5, r = 0, b = 0, l = 0))) + 
   theme(panel.background = element_rect(color = "black", size = 1.1))
 ```
+  
+![](Fig2b_boxplot_collapse_list.jpg)  
    
 ## Figure 3. Psychometric functions
-```{r, echo=FALSE, fig.show='hide'}
+```{r, evaluate=FALSE, include=FALSE}
 
 # Read fixed SNR data
 fixed <- read.csv("CDTT_ONH_YNH_fixedSNR_2020.05.30.csv", header = T)
 
-fixed$List <- as.factor(fixed$List)
+fixed$List.f <- ifelse(fixed$List == 1, "List 1", 
+                       ifelse(fixed$List == 2, "List 2", 
+                              ifelse(fixed$List == 3, "List 3", "List 4")))
+fixed$List.f <- factor(fixed$List.f)
 fixed$Group <- factor(fixed$Group, levels=c("Younger", "Older")) 
 
-# option 1: List by panels, Y and O lines together (export 8 x 16 inches)
+# Psychometric function: Lists shown in panels, Y and O lines together (export 8 x 16 inches)
 ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = Group)) + 
   geom_line(aes(linetype = Group), color = "black") +
   scale_linetype_manual(values = c("solid", "solid")) + 
@@ -193,7 +194,7 @@ ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = Group)) +
   scale_color_manual(values = c("black", "black")) +
   scale_fill_manual(values = c("black", "white")) + 
   guides(fill = guide_legend(override.aes = list(stroke = 1.1))) + 
-  facet_grid( ~ List) + 
+  facet_grid( ~ List.f) + 
   scale_x_continuous(name = "Signal-to-Noise Ratio (dB)", limits = c(-16, -8), breaks = seq(-15,-9, 2)) + 
   scale_y_continuous(name = "Triplet Percent Correct", limits = c(0,100), expand = c(0,0), breaks = seq(0,100,10)) + 
   theme_bw() + 
@@ -217,19 +218,18 @@ ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = Group)) +
 ```
 
 ![](Fig3_psychometric_by_list.jpg)
-     
+  
+```{r, evaluate=FALSE, include=FALSE}  
 
-```{r, include=FALSE}   
-# option 2
- ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = List)) + 
-  geom_line(aes(linetype = List), color = "black") +
-  scale_linetype_manual(values = c("solid", "solid", "solid", "solid")) + 
-  geom_point(size = 3, aes(shape = List, fill = List, stroke = 1.1)) + 
-  scale_shape_manual(values = c(22, 17, 21, 4)) + 
-  scale_color_manual(values = c("black", "black", "black", "black")) +
-  scale_fill_manual(values = c("white", "black", "white", "black")) + 
+# Psychometric functions: Y and O separate lines, collapsing lists 
+ ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = Group)) + 
+  stat_summary(fun = mean, geom = "line", size = 1, aes(linetype = Group)) + 
+    scale_linetype_manual(values = c("solid", "longdash")) + 
+  stat_summary(fun = mean, geom = "point", size = 2, aes(shape = Group, fill = Group, stroke = 1.1)) + 
+    scale_shape_manual(values = c(23, 24)) + 
+    scale_color_manual(values = c("black", "black")) +
+    scale_fill_manual(values = c("black", "white")) +
   guides(fill = guide_legend(override.aes = list(stroke = 1.1))) + 
-  facet_grid( ~ Group) + 
   scale_x_continuous(name = "Signal-to-Noise Ratio (dB)", limits = c(-16, -8), breaks = seq(-15,-9, 2)) + 
   scale_y_continuous(name = "Triplet Percent Correct", limits = c(0,100), expand = c(0,0), breaks = seq(0,100,10)) + 
   theme_bw() + 
@@ -240,15 +240,18 @@ ggplot(data = fixed, aes(x = SNR, y = Accuracy, group = Group)) +
   theme(axis.text.y = element_text(size = 20, colour = "black")) + 
   theme(axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0))) +
   theme(axis.text.x.bottom = element_text(vjust = -1)) + 
-  theme(plot.margin = unit(c(0.25, 0.25, 0.25, 0.25), "cm")) + 
-  theme(legend.position = c(0.93, 0.2)) + 
+  theme(plot.margin = unit(c(0.5, 0.3, 0.3, 0.3), "cm")) + 
+  theme(legend.position = c(0.83, 0.2)) + 
   theme(legend.background = element_rect(fill = "white", color = "black")) + 
-  theme(legend.title = element_text(size = 18, colour = "black")) +
+  theme(legend.title = element_blank()) +
   theme(legend.text = element_text(size = 16, colour = "black")) +
   theme(legend.key.size = unit(1.2, "cm")) + 
   theme(legend.key.width = unit(1.5, "cm")) + 
   theme(strip.text.x = element_text(size = 20)) + 
   theme(strip.background = element_rect(color = "black", fill="white", size=1.1, linetype="solid")) + 
   theme(panel.background = element_rect(color = "black", size = 1.1))
-```
+
+```  
+  
+![](Fig3b_psychometric_collapse_list.jpg)
   
